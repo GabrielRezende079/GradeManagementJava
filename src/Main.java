@@ -191,7 +191,7 @@ public class Main { //Esta é a classe do programa em si
 
                 String[] dados = linha.split(";"); // Ele vai entender a separação por ";" ou CSV
                 //Cria o Objeto
-                if (tipo.equals("aluno")) lista.add(new Aluno(dados[0], dados[1], Integer.parseInt(dados[2]))); //Se tipo for "aluno" cria dados para aluno
+                if (tipo.equals("aluno")) lista.add(new Aluno(dados[0], dados[1], Integer.parseInt(dados[2].trim()))); //Se tipo for "aluno" cria dados para aluno
                 else if (tipo.equals("disciplina")) lista.add(new Disciplina(dados[0], dados[1], Double.parseDouble(dados[2])));
                 else if (tipo.equals("curso")) lista.add(new Curso(dados[0], dados[1]));
             }

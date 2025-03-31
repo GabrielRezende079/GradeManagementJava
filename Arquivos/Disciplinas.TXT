@@ -1,10 +1,10 @@
-111;Banco de Dados;5.0
-112;Dançar muito;9.9
-113;Dar um Mortal;5.0
-114;Fazer Programa;6.0
-115;Projeto Interdiciplinar;5.0
-116;Ser Humilhado;4.0
-117;Engenharia de Software;5.0
-118;Ser Xingado de Graça pelo Chamon;5.0
-119;Algoritmo;5.0
-110;Propabilidade;5;0
+01;Banco de Dados;5.0
+02;Dançar muito;9.9
+03;Dar um Mortal;5.0
+04;Fazer Programa;6.0
+05;Projeto Interdiciplinar;5.0
+06;Ser Humilhado;4.0
+07;Engenharia de Software;5.0
+08;Ser Xingado de Graça pelo Chamon;5.0
+09;Algoritmo;5.0
+10;Probabilidade;5;0
