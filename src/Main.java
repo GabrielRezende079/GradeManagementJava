@@ -1,25 +1,33 @@
-import java.io.*; // Mexer com arquivos
-import java.util.Scanner; // "input"
+import java.io.*;
+import java.util.*;
 
-class Aluno { //Classe que Absosrve os dados de Aluno.txt
+class Aluno {
     String matricula, nome;
     int idade;
 
-    public Aluno(String matricula, String nome, int idade) {//Construtor da classe. Serve para inicializar os atributos do objeto com os valores passados como parâmetros.
+    public Aluno(String matricula, String nome, int idade) {
         this.matricula = matricula;
         this.nome = nome;
         this.idade = idade;
     }
+
+    public String toFile() {
+        return matricula + ";" + nome + ";" + idade;
+    }
 }
 
-class Disciplina { //Absorve de Disciplinas.txt
+class Disciplina {
     String codigo, nome;
     double notaMinima;
 
-    public Disciplina(String codigo, String nome, double notaMinima) { //Contrutor Também
+    public Disciplina(String codigo, String nome, double notaMinima) {
         this.codigo = codigo;
         this.nome = nome;
         this.notaMinima = notaMinima;
+    }
+
+    public String toFile() {
+        return codigo + ";" + nome + ";" + notaMinima;
     }
 }
 
@@ -34,178 +42,251 @@ class Nota {
         this.nota2 = nota2;
     }
 
-    public double calcularMedia() {//Aqui é pra ter uma função que calcula média
-        return (nota1 + nota2) / 2; // Tem que retornar o valor de algum lugar né chefe
+    public double calcularMedia() {
+        return (nota1 + nota2) / 2;
+    }
+
+    public String toFile() {
+        return matriculaAluno + ";" + codigoDisciplina + ";" + nota1 + ";" + nota2;
     }
 }
 
-public class Main { //Esta é a classe do programa em si
+public class Main {
+    private static final String CAMINHO_ALUNOS = "C:\\Users\\Pichau\\Documents\\MeusProj\\GradeManagementJava\\Arquivos\\Alunos.txt";
+    private static final String CAMINHO_DISCIPLINAS = "C:\\Users\\Pichau\\Documents\\MeusProj\\GradeManagementJava\\Arquivos\\Disciplinas.txt";
+    private static final String CAMINHO_NOTAS = "C:\\Users\\Pichau\\Documents\\MeusProj\\GradeManagementJava\\Arquivos\\Notas.txt";
 
-    //Criando Arrays para cada informação dos txt, assim podemos armazenar quantos dados eu quiser mas dentro dos limites
-    private static Aluno[] alunos = new Aluno[30]; //maximo de 30 alunos
-    private static Disciplina[] disciplinas = new Disciplina[10]; //max de 10 matérias
-    private static Nota[] notas = new Nota[60]; // mas de 60 notas
+    private static List<Aluno> alunos = new ArrayList<>();
+    private static List<Disciplina> disciplinas = new ArrayList<>();
+    private static List<Nota> notas = new ArrayList<>();
 
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in); // criando o escaneador ou input ou cara que Lê do terminal
-        // incluindo o caminho para os txt/banco de dados light
-        carregarAlunos("C:\\Users\\Pichau\\Desktop\\Exercicios coding\\JAVA\\Grade_Management\\Arquivos\\Alunos.txt");
-        carregarDisciplinas("C:\\Users\\Pichau\\Desktop\\Exercicios coding\\JAVA\\Grade_Management\\Arquivos\\Disciplinas.txt");
-        carregarNotas("C:\\Users\\Pichau\\Desktop\\Exercicios coding\\JAVA\\Grade_Management\\Arquivos\\Notas.txt");
+        Scanner scanner = new Scanner(System.in);
 
-        while (true) { // "Enquanto for verdade apresnete...
+        carregarAlunos();
+        carregarDisciplinas();
+        carregarNotas();
+
+        while (true) {
             System.out.println("\nMenu:");
-            System.out.println("1. Buscar resultados");
-            System.out.println("2. Sair");
+            System.out.println("1. Buscar dados");
+            System.out.println("2. Editar dados");
+            System.out.println("3. Inserir dados");
+            System.out.println("4. Remover dados");
+            System.out.println("5. Sair");
             System.out.print("Escolha: ");
-            int escolha = scanner.nextInt();
-            scanner.nextLine(); //pula pra proxima linha
 
-            //Melhor coisa da programação If e Else
-            if (escolha == 1) buscarResultados(scanner);// "Se escolher opção 1 Caminhar para BuscarReseuldos
-            else if (escolha == 2) break;
+            int escolha = Integer.parseInt(scanner.nextLine());
+
+            if (escolha == 1) buscarResultados(scanner);
+            else if (escolha == 2) editarDados(scanner);
+            else if (escolha == 3) inserirDados(scanner);
+            else if (escolha == 4) removerDados(scanner);
+            else if (escolha == 5) break;
         }
     }
 
-    private static void carregarAlunos(String arquivo) {
-        try (BufferedReader br = new BufferedReader(new FileReader(arquivo))) { // Abertura e Leitura
-            String linha; //usada para armazenar cada linha do arquivo.
-            int index = 0; //controla a posição do vetor alunos[]
-            while ((linha = br.readLine()) != null && index < alunos.length) { //Lê o arquivo linha por linha e impede que o código tente adicionar mais alunos do que o vetor pode armazenar.
-
-                String[] dados = linha.split(";"); // Ele vai entender a separação por ";" ou CSV
-                /*
-                dados[0] = "12345";  // Matrícula
-                dados[1] = "João Silva"; // Nome
-                dados[2] = "22";  // Idade (ainda como String)
-                 */
-
-                alunos[index++] = new Aluno(dados[0], dados[1], Integer.parseInt(dados[2].trim())); //Converte e armazena no vetor
-            }
-        } catch (IOException e) {
-            System.out.println("Erro ao carregar " + arquivo);
-        }
-    }
-
-    private static void carregarDisciplinas(String arquivo) {
-        try (BufferedReader br = new BufferedReader(new FileReader(arquivo))) {
+    private static void carregarAlunos() {
+        try (BufferedReader br = new BufferedReader(new FileReader(CAMINHO_ALUNOS))) {
             String linha;
-            int index = 0;
-            while ((linha = br.readLine()) != null && index < disciplinas.length) {
+            while ((linha = br.readLine()) != null) {
                 String[] dados = linha.split(";");
-                disciplinas[index++] = new Disciplina(dados[0], dados[1], Double.parseDouble(dados[2].trim())); //Se tipo for "Disciplina" cria dados para disciplina
+                alunos.add(new Aluno(dados[0], dados[1], Integer.parseInt(dados[2].trim())));
             }
         } catch (IOException e) {
-            System.out.println("Erro ao carregar " + arquivo);
+            System.out.println("Erro ao carregar alunos.");
         }
     }
 
-    private static void carregarNotas(String arquivo) {
-        try (BufferedReader br = new BufferedReader(new FileReader(arquivo))) {
+    private static void carregarDisciplinas() {
+        try (BufferedReader br = new BufferedReader(new FileReader(CAMINHO_DISCIPLINAS))) {
             String linha;
-            int index = 0;
-            while ((linha = br.readLine()) != null && index < notas.length) {
+            while ((linha = br.readLine()) != null) {
                 String[] dados = linha.split(";");
-                notas[index++] = new Nota(dados[0], dados[1], Double.parseDouble(dados[2].trim()), Double.parseDouble(dados[3].trim()));//Se tipo for "Nota" cria dados para nota
+                disciplinas.add(new Disciplina(dados[0], dados[1], Double.parseDouble(dados[2].trim())));
             }
         } catch (IOException e) {
-            System.out.println("Erro ao carregar " + arquivo);
+            System.out.println("Erro ao carregar disciplinas.");
         }
     }
 
-        //Aqui ele é a função dos If la de cima
+    private static void carregarNotas() {
+        try (BufferedReader br = new BufferedReader(new FileReader(CAMINHO_NOTAS))) {
+            String linha;
+            while ((linha = br.readLine()) != null) {
+                String[] dados = linha.split(";");
+                notas.add(new Nota(dados[0], dados[1], Double.parseDouble(dados[2].trim()), Double.parseDouble(dados[3].trim())));
+            }
+        } catch (IOException e) {
+            System.out.println("Erro ao carregar notas.");
+        }
+    }
+
     private static void buscarResultados(Scanner scanner) {
-        System.out.println("1. Por Aluno");
-        System.out.println("2. Por Disciplina");
-        int escolha = scanner.nextInt();
-        scanner.nextLine();
-
-        if (escolha == 1) buscarPorAluno(scanner);//leva para essa respetiva Função
-        else if (escolha == 2) buscarPorDisciplina(scanner);//leva para essa respetiva Função
-    }
-
-    //Uma das partes mais importantes. Recolher os dados de Alunos.txt em arrays, trazendo um sentido verdadeiro para o código
-    private static void buscarPorAluno(Scanner scanner) { //O metodo recebe o scanner
-        System.out.print("Informe o nome ou matrícula do aluno: ");
-        String busca = scanner.nextLine();// lê a variavel "Busca" que ta na proxima linha
-
-        for (Aluno aluno : alunos) { //vai atras da lista Alunos
-            if (aluno != null && (aluno.matricula.equalsIgnoreCase(busca) || aluno.nome.equalsIgnoreCase(busca))) { //Compara a variavel busca com o codigo do Aluno escrito no txt
-                StringBuilder resultado = new StringBuilder("Resultados para o aluno: " + aluno.nome + "\n"); //StringBuilder facilita a concatenação "+" de txtos
-                for (Nota nota : notas) {
-                    if (nota != null && nota.matriculaAluno.equals(aluno.matricula)) { // Verifica se cada nota ta em Aluno
-                        Disciplina disciplina = encontrarDisciplina(nota.codigoDisciplina); //filtra as Disciplinas procurando quem tem
-                        if (disciplina != null) {
-                            double media = nota.calcularMedia(); //faz a média
-                            resultado.append("Disciplina: ").append(disciplina.nome) //cosntroí a linha de resultadado
-                                    .append(" - Nota 1: ").append(nota.nota1)//cosntroí a linha de resultadado
-                                    .append(" - Nota 2: ").append(nota.nota2)//cosntroí a linha de resultadado
-                                    .append(" - Média: ").append(media)//cosntroí a linha de resultadado
-                                    .append(" - Resultado: ")
-                                    .append(media >= disciplina.notaMinima ? "Aprovado" : "Reprovado")
-                                    .append("\n");
+        System.out.println("Buscar por:\n1. Aluno\n2. Disciplina");
+        int opcao = Integer.parseInt(scanner.nextLine());
+        if (opcao == 1) {
+            System.out.print("Digite a matrícula do aluno: ");
+            String matricula = scanner.nextLine();
+            for (Aluno a : alunos) {
+                if (a.matricula.equals(matricula)) {
+                    System.out.println("Aluno: " + a.nome);
+                    for (Nota n : notas) {
+                        if (n.matriculaAluno.equals(matricula)) {
+                            Disciplina d = disciplinas.stream().filter(di -> di.codigo.equals(n.codigoDisciplina)).findFirst().orElse(null);
+                            if (d != null) {
+                                System.out.printf("%s: %.2f e %.2f | Média: %.2f | %s\n",
+                                        d.nome, n.nota1, n.nota2, n.calcularMedia(),
+                                        n.calcularMedia() >= d.notaMinima ? "Aprovado" : "Reprovado");
+                            }
                         }
                     }
+                    return;
                 }
-                salvarEmArquivo(aluno.matricula + ".txt", resultado.toString());
-                System.out.println(resultado);
-                return;// e finalmente salve num novo txt
-                //retorna exibindo tudo
             }
-        }
-        System.out.println("Aluno não encontrado.");
-    }
-
-    // Recolher os dados de Disciplinas.txt em arrays, trazendo um sentido verdadeiro para o código
-    private static void buscarPorDisciplina(Scanner scanner) { //O metodo recebe o scanner
-        System.out.print("Informe o nome ou código da disciplina: ");
-        String busca = scanner.nextLine();// lê a variavel "Busca" que ta na proxima linha
-
-        for (Disciplina disciplina : disciplinas) {  //vai atras da lista Diciplinas
-            if (disciplina != null && (disciplina.codigo.equalsIgnoreCase(busca) || disciplina.nome.equalsIgnoreCase(busca))) { //Compara a variavel busca com o codigo da disciplina escrito no txt
-                StringBuilder resultado = new StringBuilder("Resultados para a disciplina: " + disciplina.nome + "\n"); //StringBuilder facilita a concatenação "+" de txtos
-                for (Nota nota : notas) {
-                    if (nota != null && nota.codigoDisciplina.equals(disciplina.codigo)) {// Verifica se cada nota ta em disciplina
-                        Aluno aluno = encontrarAluno(nota.matriculaAluno); //filtra os alunos procurando quem tem
-                        if (aluno != null) {
-                            double media = nota.calcularMedia();//se aluno foi encontrado faz a média
-                            resultado.append("Aluno: ").append(aluno.nome)//cosntroí a linha de resultadado
-                                    .append(" - Nota 1: ").append(nota.nota1)//cosntroí a linha de resultadado
-                                    .append(" - Nota 2: ").append(nota.nota2)
-                                    .append(" - Média: ").append(media)
-                                    .append(" - Resultado: ")
-                                    .append(media >= disciplina.notaMinima ? "Aprovado" : "Reprovado")
-                                    .append("\n");
+            System.out.println("Aluno não encontrado.");
+        } else if (opcao == 2) {
+            System.out.print("Digite o código da disciplina: ");
+            String codigo = scanner.nextLine();
+            for (Disciplina d : disciplinas) {
+                if (d.codigo.equals(codigo)) {
+                    System.out.println("Disciplina: " + d.nome);
+                    for (Nota n : notas) {
+                        if (n.codigoDisciplina.equals(codigo)) {
+                            Aluno a = alunos.stream().filter(al -> al.matricula.equals(n.matriculaAluno)).findFirst().orElse(null);
+                            if (a != null) {
+                                System.out.printf("%s: %.2f e %.2f | Média: %.2f | %s\n",
+                                        a.nome, n.nota1, n.nota2, n.calcularMedia(),
+                                        n.calcularMedia() >= d.notaMinima ? "Aprovado" : "Reprovado");
+                            }
                         }
                     }
+                    return;
                 }
-                salvarEmArquivo(disciplina.codigo + ".txt", resultado.toString()); // e finalmente salve num novo txt
-                System.out.println(resultado);
-                return;//retorna exibindo tudo
             }
+            System.out.println("Disciplina não encontrada.");
         }
-        System.out.println("Disciplina não encontrada.");// se não encotrar, é pq não encontrou
     }
 
-    private static Aluno encontrarAluno(String matricula) {
-        for (Aluno aluno : alunos) {
-            if (aluno != null && aluno.matricula.equals(matricula)) return aluno;
+    private static void editarDados(Scanner scanner) {
+        System.out.println("1. Editar aluno\n2. Editar disciplina\n3. Editar nota");
+        int opcao = Integer.parseInt(scanner.nextLine());
+
+        if (opcao == 1) {
+            System.out.print("Matrícula do aluno: ");
+            String mat = scanner.nextLine();
+            for (Aluno a : alunos) {
+                if (a.matricula.equals(mat)) {
+                    System.out.print("Novo nome: ");
+                    a.nome = scanner.nextLine();
+                    System.out.print("Nova idade: ");
+                    a.idade = Integer.parseInt(scanner.nextLine());
+                    salvarLista(alunos, CAMINHO_ALUNOS);
+                    return;
+                }
+            }
+            System.out.println("Aluno não encontrado.");
+        } else if (opcao == 2) {
+            System.out.print("Código da disciplina: ");
+            String cod = scanner.nextLine();
+            for (Disciplina d : disciplinas) {
+                if (d.codigo.equals(cod)) {
+                    System.out.print("Novo nome: ");
+                    d.nome = scanner.nextLine();
+                    System.out.print("Nova nota mínima: ");
+                    d.notaMinima = Double.parseDouble(scanner.nextLine());
+                    salvarLista(disciplinas, CAMINHO_DISCIPLINAS);
+                    return;
+                }
+            }
+            System.out.println("Disciplina não encontrada.");
+        } else if (opcao == 3) {
+            System.out.print("Matrícula do aluno: ");
+            String mat = scanner.nextLine();
+            System.out.print("Código da disciplina: ");
+            String cod = scanner.nextLine();
+            for (Nota n : notas) {
+                if (n.matriculaAluno.equals(mat) && n.codigoDisciplina.equals(cod)) {
+                    System.out.print("Nova nota 1: ");
+                    n.nota1 = Double.parseDouble(scanner.nextLine());
+                    System.out.print("Nova nota 2: ");
+                    n.nota2 = Double.parseDouble(scanner.nextLine());
+                    salvarLista(notas, CAMINHO_NOTAS);
+                    return;
+                }
+            }
+            System.out.println("Nota não encontrada.");
         }
-        return null;  // processa o aluno encontrado
     }
 
-    private static Disciplina encontrarDisciplina(String codigo) {
-        for (Disciplina disciplina : disciplinas) {
-            if (disciplina != null && disciplina.codigo.equals(codigo)) return disciplina;
+    private static void inserirDados(Scanner scanner) {
+        System.out.println("1. Inserir aluno\n2. Inserir disciplina\n3. Inserir nota");
+        int opcao = Integer.parseInt(scanner.nextLine());
+
+        if (opcao == 1) {
+            System.out.print("Matrícula: ");
+            String mat = scanner.nextLine();
+            System.out.print("Nome: ");
+            String nome = scanner.nextLine();
+            System.out.print("Idade: ");
+            int idade = Integer.parseInt(scanner.nextLine());
+            alunos.add(new Aluno(mat, nome, idade));
+            salvarLista(alunos, CAMINHO_ALUNOS);
+        } else if (opcao == 2) {
+            System.out.print("Código: ");
+            String cod = scanner.nextLine();
+            System.out.print("Nome: ");
+            String nome = scanner.nextLine();
+            System.out.print("Nota mínima: ");
+            double notaMin = Double.parseDouble(scanner.nextLine());
+            disciplinas.add(new Disciplina(cod, nome, notaMin));
+            salvarLista(disciplinas, CAMINHO_DISCIPLINAS);
+        } else if (opcao == 3) {
+            System.out.print("Matrícula do aluno: ");
+            String mat = scanner.nextLine();
+            System.out.print("Código da disciplina: ");
+            String cod = scanner.nextLine();
+            System.out.print("Nota 1: ");
+            double n1 = Double.parseDouble(scanner.nextLine());
+            System.out.print("Nota 2: ");
+            double n2 = Double.parseDouble(scanner.nextLine());
+            notas.add(new Nota(mat, cod, n1, n2));
+            salvarLista(notas, CAMINHO_NOTAS);
         }
-        return null; // processa a disciplina encontrada
     }
-    //Aqui é o "historico" irá salvar os dados em um novo Txt
-    private static void salvarEmArquivo(String nomeArquivo, String conteudo) {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(nomeArquivo))) { //Aqui é onde se cria o arquivo em si
-            writer.write(conteudo);
-        } catch (IOException e) {
-            System.out.println("Erro ao salvar o arquivo " + nomeArquivo);
+
+    private static void removerDados(Scanner scanner) {
+        System.out.println("1. Remover aluno\n2. Remover disciplina\n3. Remover nota");
+        int opcao = Integer.parseInt(scanner.nextLine());
+
+        if (opcao == 1) {
+            System.out.print("Matrícula: ");
+            String mat = scanner.nextLine();
+            alunos.removeIf(a -> a.matricula.equals(mat));
+            salvarLista(alunos, CAMINHO_ALUNOS);
+        } else if (opcao == 2) {
+            System.out.print("Código: ");
+            String cod = scanner.nextLine();
+            disciplinas.removeIf(d -> d.codigo.equals(cod));
+            salvarLista(disciplinas, CAMINHO_DISCIPLINAS);
+        } else if (opcao == 3) {
+            System.out.print("Matrícula: ");
+            String mat = scanner.nextLine();
+            System.out.print("Código da disciplina: ");
+            String cod = scanner.nextLine();
+            notas.removeIf(n -> n.matriculaAluno.equals(mat) && n.codigoDisciplina.equals(cod));
+            salvarLista(notas, CAMINHO_NOTAS);
+        }
+    }
+
+    private static <T> void salvarLista(List<T> lista, String caminho) {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(caminho))) {
+            for (T item : lista) {
+                bw.write(item.toString().contains("@") ? item.toString() : item.getClass().getMethod("toFile").invoke(item).toString());
+                bw.newLine();
+            }
+        } catch (Exception e) {
+            System.out.println("Erro ao salvar no arquivo: " + caminho);
         }
     }
 }
