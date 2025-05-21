@@ -282,10 +282,17 @@ public class Main {
     private static <T> void salvarLista(List<T> lista, String caminho) {
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(caminho))) {
             for (T item : lista) {
-                bw.write(item.toString().contains("@") ? item.toString() : item.getClass().getMethod("toFile").invoke(item).toString());
+                // Cast seguro para chamar o método toFile()
+                if (item instanceof Aluno) {
+                    bw.write(((Aluno) item).toFile());
+                } else if (item instanceof Disciplina) {
+                    bw.write(((Disciplina) item).toFile());
+                } else if (item instanceof Nota) {
+                    bw.write(((Nota) item).toFile());
+                }
                 bw.newLine();
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             System.out.println("Erro ao salvar no arquivo: " + caminho);
         }
     }
